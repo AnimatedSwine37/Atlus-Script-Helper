@@ -240,6 +240,8 @@ connection.onHover(({ textDocument, position }): Hover | undefined => {
 	if (document != undefined) {
 		let { text, index } = getPositionText(document, position);
 		const word = getWord(text, index);
+
+		// Check if the word is a game function
 		let item = libraryCompletionItems?.find(x => x.label == word);
 		if (item != undefined) {
 			let value: string = (item.detail + "\n" + item.documentation);
@@ -250,16 +252,43 @@ connection.onHover(({ textDocument, position }): Hover | undefined => {
 					value: value,
 				},
 			};
+		} 
+		
+		// Check if the word is a message (is inside of a MSG function)
+		let currentImports = documentImports.get(textDocument.uri)?.filter(x => x.endsWith(".msg"));
+		let message: CompletionItem | undefined;
+		if (currentImports != null && messageCompletionItems != null && (cursorInFunction(text, index, "MSG") || cursorInFunction(text, index, "HELP_MSG"))) {
+			console.log(`We're in a message function with the message ${word}`);
+			// Go through each of the current message imports to find the word that's hovered over
+			for(let i = 0; i < currentImports.length; i++){
+				let gotItems = messageCompletionItems.get(path.dirname(textDocument.uri) + "/" + currentImports[i]);
+				if (gotItems != undefined) {
+					message = gotItems.find(x => x.label == word);
+					if(message != undefined) break;
+				}
+			}
+			// Output details of the message if it was found
+			if(message != undefined && message.documentation != undefined) {
+				let value: string = message.documentation.toString();
+				value = value.replace(/\n/g, "\n\n");
+				return {
+					contents: {
+						kind: "markdown",
+						value: value,
+					}
+				}
+			}
 		}
+
 		// TODO properly implement hovering (details about variables and whatnot)
-		if (word !== '') {
-			return {
-				contents: {
-					kind: 'markdown',
-					value: `Current word: **${word}**.`,
-				},
-			};
-		}
+		// if (word !== '') {
+		// 	return {
+		// 		contents: {
+		// 			kind: 'markdown',
+		// 			value: `Current word: **${word}**.`,
+		// 		},
+		// 	};
+		// }
 	}
 	return undefined;
 })

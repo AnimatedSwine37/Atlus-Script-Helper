@@ -50,7 +50,6 @@ export function cursorInFunction(text: string, index: number, functionName: stri
 		if (match != null) {
 			if (index > text.indexOf(match[1]) && index < text.indexOf(match[1]) + match[1].length) {
 				// Check for comments
-				let test = text.indexOf("//");
 				if (!(text.indexOf("//") >= 0 && index >= text.indexOf("//"))) {
 					return true;
 				}

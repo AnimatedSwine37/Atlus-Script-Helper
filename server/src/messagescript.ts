@@ -1,15 +1,29 @@
+class Message {
+	name: string;
+	content: string;
 
-export function getMessages(text:string):string[] {
+	constructor(name:string, content:string) {
+		this.name = name;
+		this.content = content;
+	}
+}
+
+export function getMessages(text: string): Message[]  {
 	if(text == undefined) {
-		[];
+		return [];
 	}
 	// Find all messages in the file
-	let messagePattern = /\[msg ([A-Za-z0-9_]+)(?: \[([A-Za-z0-9_ ]+)\])?\]/g;
+	let messagePattern = /\[msg ([A-Za-z0-9_ ']+)(?: \[([A-Za-z0-9_ ']+)\])?(?:top)?\]/g;
 	let match: RegExpExecArray | null;
-
-	let messages: string[] = [];
+	let messages: Message[] = [];
+	let lastIndex = 0;
+	
 	while ((match = messagePattern.exec(text))) {
-		messages.push(match[1]);
+		if(lastIndex > 0) {
+			messages[messages.length-1].content = text.substring(lastIndex, match.index);
+		}
+		messages.push(new Message(match[1], ""));
+		lastIndex = match.index + match[0].length;
 	}
 	return messages;
 }
@@ -17,7 +31,7 @@ export function getMessages(text:string):string[] {
 export function getSelections(text:string):{name:string, options:string[]}[] {
 	// TODO convert message variables colours, etc. found to human readable versions
 	if(text == undefined) {
-		[];
+		return [];
 	}
 	// Find all selections in the file
 	let selectionPattern = /\[sel ([A-Za-z0-9_]+)(?: \[([A-Za-z0-9_ ]+)\])?\](?:\s+\[f 0 5 -258\]\[f 2 1\](.*)\[e\])+/g;

@@ -75,10 +75,10 @@ export function loadMessages(text: string, fileName: string): CompletionItem[] {
 	let messages = getMessages(text);
 	return messages.map((x) => {
 		return {
-			label: x,
+			label: x.name,
 			kind: CompletionItemKind.Variable,
-			data: x,
-			documentation: `Imported from ${fileName}`
+			data: x.name,
+			documentation: `Imported from ${fileName}\n${x.content}`
 		}
 	})
 	// TODO have filename be hyperlinked to the file

@@ -37,67 +37,89 @@
 				},
 				"atlusScriptHelper.defaultGame": {
 					"scope": "resource",
-					"type":"string",
-					"enum": ["SMT3 Nocturne", "SMT Digital Devil Saga", "Persona 3 Portable", "Persona 3", "Persona 3 FES", "Persona 4",
-							"Persona 4 Golden", "Persona 5", "Persona 5 Royal", "Persona Q2"],
+					"type": "string",
+					"enum": [
+						"SMT3 Nocturne",
+						"SMT Digital Devil Saga",
+						"Persona 3 Portable",
+						"Persona 3",
+						"Persona 3 FES",
+						"Persona 4",
+						"Persona 4 Golden",
+						"Persona 5",
+						"Persona 5 Royal",
+						"Persona Q2"
+					],
 					"description": "The game that all newly opened flowscript files will default to."
-
 				}
 			}
 		},
-		"languages": [{
-			"id": "Flowscript",
-			"extensions": [
-				".flow"
-			]
-		}],
+		"languages": [
+			{
+				"id": "Flowscript",
+				"extensions": [
+					".flow"
+				]
+			},
+			{
+				"id": "Messagescript",
+				"extensions": [
+					".msg"
+				]
+			}
+		],
 		"grammars": [
 			{
 				"language": "Flowscript",
 				"scopeName": "source.flowscript",
 				"path": "./syntaxes/flowscript.json"
+			},
+			{
+				"language": "Messagescript",
+				"scopeName": "source.messagescript",
+				"path": "./syntaxes/messagescript.json"
 			}
 		],
 		"commands": [
-		{
-		  "command": "flowscript.compile",
-		  "title": "Compile Flowscript"
-		},
-		{
-			"command": "flowscript.decompile",
-			"title": "Decompile Flowscript"
-		},
-		{
-			"command": "flowscript.selectGame",
-			"title": "Select Game"
-		}
-	  ],
-	   "menus": {
-		"explorer/context": [
-		  {
-			"when": "resourceExtname == .flow",
-			"command": "flowscript.compile",
-			"group": "7_modification"
-		  },
-		  {
-			  "when": "resourceExtname == .bf",
-			  "command": "flowscript.decompile",
-			  "group": "7_modification"
-		  }
+			{
+				"command": "flowscript.compile",
+				"title": "Compile Flowscript"
+			},
+			{
+				"command": "flowscript.decompile",
+				"title": "Decompile Flowscript"
+			},
+			{
+				"command": "flowscript.selectGame",
+				"title": "Select Game"
+			}
 		],
-		"editor/context": [
-		  {
-			"when": "resourceExtname == .flow",
-			"command": "flowscript.compile",
-			"group": "7_modification"
-		  },
-		  {
-			  "when": "resourceExtname == .bf",
-			  "command": "flowscript.decompile",
-			  "group": "7_modification"
-		  }
-		]
-	}
+		"menus": {
+			"explorer/context": [
+				{
+					"when": "resourceExtname == .flow",
+					"command": "flowscript.compile",
+					"group": "7_modification"
+				},
+				{
+					"when": "resourceExtname == .bf",
+					"command": "flowscript.decompile",
+					"group": "7_modification"
+				}
+			],
+			"editor/context": [
+				{
+					"when": "resourceExtname == .flow",
+					"command": "flowscript.compile",
+					"group": "7_modification"
+				},
+				{
+					"when": "resourceExtname == .bf",
+					"command": "flowscript.decompile",
+					"group": "7_modification"
+				}
+			]
+		}
 	},
 	"scripts": {
 		"vscode:prepublish": "npm run compile",
