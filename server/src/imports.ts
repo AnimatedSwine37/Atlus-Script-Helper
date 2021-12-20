@@ -4,7 +4,7 @@ import { CompletionItem, CompletionItemKind, ConnectionError } from 'vscode-lang
 import { getFileText } from './utils';
 import * as path from 'path';
 import { getFunctions } from './flowscript';
-import { getMessages, getSelections } from './messagescript';
+import { getMessages } from './messagescript';
 
 // Load all of the functions from the library jsons
 export function loadLibrary(scriptToolsPath: string): CompletionItem[] | null {
@@ -77,24 +77,11 @@ export function loadMessages(text: string, fileName: string): CompletionItem[] {
 		return {
 			label: x.name,
 			kind: CompletionItemKind.Variable,
-			data: x.name,
-			documentation: `Imported from ${fileName}\n${x.content}`
+			data: `${x.name}-${x.isSelection ? "sel" : "msg"}`,
+			documentation: `Imported from ${fileName}\n${x.content}`,
 		}
 	})
 	// TODO have filename be hyperlinked to the file
-}
-
-export function loadSelections(text: string, fileName: string): CompletionItem[] {
-	let selections = getSelections(text);
-	return selections.map((x) => {
-		return {
-			label: x.name,
-			kind: CompletionItemKind.Variable,
-			data: x.name,
-			documentation: `Imported from ${fileName}\n${x.options.reduce((accumulator, value) =>
-				accumulator + "\n" + value)}`
-		}
-	});
 }
 
 export function getImportCompletionItems(completionItems: Map<string, CompletionItem[]>, documentUri: string, documentImports: Map<string, string[]>, loadFunction:Function, fileExtension:string): Map<string, CompletionItem[]> {

@@ -21,7 +21,7 @@ import {
 } from 'vscode-languageserver-textdocument';
 import { validateImport } from './validation'
 import { cursorInFunction, getPositionText, getWord } from './utils';
-import { getImportCompletionItems, loadFunctions, loadLibrary, loadMessages, loadSelections } from './imports';
+import { getImportCompletionItems, loadFunctions, loadLibrary, loadMessages } from './imports';
 import * as path from 'path';
 import { existsSync } from 'fs';
 import { fileURLToPath } from 'url';
@@ -102,7 +102,6 @@ let libraryCompletionItems: CompletionItem[] | null = null;
 
 let functionCompletionItems: Map<string, CompletionItem[]> = new Map();
 let messageCompletionItems: Map<string, CompletionItem[]>  = new Map();
-let selectionCompletionItems: Map<string, CompletionItem[]> = new Map();
 
 // Cache the settings of all open documents
 let documentSettings: Map<string, Thenable<Settings>> = new Map();
@@ -171,7 +170,7 @@ async function validateTextDocument(textDocument: TextDocument): Promise<void> {
 
 	// The validator creates diagnostics for all uppercase words length 2 and more
 	let text = textDocument.getText();
-	let importPattern = /import\("(.*)"\);/g;
+	let importPattern = /import\s*\(\s*"(.*)"\s*\)/g;
 	let match: RegExpExecArray | null;
 
 	let diagnostics: Diagnostic[] = [];
@@ -223,7 +222,6 @@ async function validateTextDocument(textDocument: TextDocument): Promise<void> {
 
 	// TODO don't redo the message items every time the document is validated, only when new ones are actually added
 	messageCompletionItems = getImportCompletionItems(messageCompletionItems, textDocument.uri, documentImports, loadMessages, ".msg");
-	selectionCompletionItems = getImportCompletionItems(selectionCompletionItems, textDocument.uri, documentImports, loadSelections, ".msg");
 	functionCompletionItems = getImportCompletionItems(functionCompletionItems, textDocument.uri, documentImports, loadFunctions, ".flow");
 
 	// Send the computed diagnostics to VSCode.
@@ -258,12 +256,11 @@ connection.onHover(({ textDocument, position }): Hover | undefined => {
 		let currentImports = documentImports.get(textDocument.uri)?.filter(x => x.endsWith(".msg"));
 		let message: CompletionItem | undefined;
 		if (currentImports != null && messageCompletionItems != null && (cursorInFunction(text, index, "MSG") || cursorInFunction(text, index, "HELP_MSG"))) {
-			console.log(`We're in a message function with the message ${word}`);
 			// Go through each of the current message imports to find the word that's hovered over
 			for(let i = 0; i < currentImports.length; i++){
 				let gotItems = messageCompletionItems.get(path.dirname(textDocument.uri) + "/" + currentImports[i]);
 				if (gotItems != undefined) {
-					message = gotItems.find(x => x.label == word);
+					message = gotItems.find(x => x.label == word && x.data == `${word}-msg`);
 					if(message != undefined) break;
 				}
 			}
@@ -308,14 +305,14 @@ connection.onCompletion(
 				currentImports.forEach(x => {
 					let gotItems = messageCompletionItems.get(path.dirname(params.textDocument.uri) + "/" + x);
 					if (gotItems != undefined)
-						completionItems = completionItems.concat(gotItems)
+						completionItems = completionItems.concat(gotItems.filter(x => x.data.endsWith("msg")))
 				});
 			}
-			else if (currentImports != undefined && selectionCompletionItems != null && (cursorInFunction(text, index, "SEL") || cursorInFunction(text, index, "ADV_SEL"))) {
+			else if (currentImports != undefined && messageCompletionItems != null && (cursorInFunction(text, index, "SEL") || cursorInFunction(text, index, "ADV_SEL"))) {
 				currentImports.forEach(x => {
-					let gotItems = selectionCompletionItems.get(path.dirname(params.textDocument.uri) + "/" + x);
+					let gotItems = messageCompletionItems.get(path.dirname(params.textDocument.uri) + "/" + x);
 					if (gotItems != undefined)
-						completionItems = completionItems.concat(gotItems)
+						completionItems = completionItems.concat(gotItems.filter(x => x.data.endsWith("sel")))
 				});
 			}
 			else {
