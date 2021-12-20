@@ -1,0 +1,677 @@
+{
+	"scopeName": "source.flowscript",
+	"fileTypes": [
+		"Flowscript"
+	],
+	"name": "Flowscript",
+	"patterns": [
+		{
+			"include": "#comments"
+		},
+		{
+			"match": "(import)\\s*\\((\\s*\".*\"\\s*)\\)",
+			"captures": {
+				"1": {
+					"name": "keyword.control.import.flowscript"
+				},
+				"2": {
+					"name": "string.quoted.flowscript"
+				}
+			}
+		},
+		{
+			"match": "global",
+			"name": "storage.modifier.global.flowscript"
+		},
+		{
+			"include": "#switch_statement"
+		},
+		{
+			"match": "\\b(bool|double|float|int|long|short|void)\\b",
+			"name": "storage.type.flowscript"
+		},
+		{
+			"match": "\\b(break|case|continue|default|do|else|for|goto|if|return|switch|while)\\b",
+			"name": "keyword.control.flowscript"
+		},
+		{
+			"match": "\\b(true|false)\\b",
+			"name": "constant.language.flowscript"
+		},
+		{
+			"match": "\\b([A-Za-z_]+[A-Za-z_0-9]*)\\b",
+			"name": "variable.flowscript"
+		},
+		{
+			"begin": "(?x)\n(?:\n  ^ |\n  (?:\n    (?=\\s)(?<!else|new|return)(?<=\\w)  # word + space before name\n    |\n    (?=\\s*[A-Za-z_])(?<!&&)(?<=[*&>])   # type modifier before name\n  )\n)\n(\\s*)(?!(while|for|do|if|else|switch|return)\\s*\\()\n(\n  (?:[A-Za-z_][A-Za-z0-9_]*+|::)++  # actual name\n  |\n  (?:(?<=operator)(?:[-*&<>=+!]+|\\(\\)|\\[\\]))\n)\n\\s*(?=\\()",
+			"beginCaptures": {
+				"1": {
+					"name": "punctuation.whitespace.function.leading.flowscript"
+				},
+				"3": {
+					"name": "entity.name.function.flowscript"
+				},
+				"4": {
+					"name": "punctuation.definition.parameters.flowscript"
+				}
+			},
+			"end": "(?<=\\})|(?=#)|(;)",
+			"name": "meta.function.flowscript",
+			"patterns": [
+				{
+					"include": "#comments"
+				},
+				{
+					"include": "#parens"
+				},
+				{
+					"match": "\\b(const)\\b",
+					"name": "storage.modifier.flowscript"
+				},
+				{
+					"include": "#block"
+				}
+			]
+		},
+		{
+			"include": "#strings"
+		},
+		{
+			"include": "#operators"
+		},
+		{
+			"include": "#numbers"
+		},
+		{
+			"include": "#block"
+		},
+		{
+			"include": "#line_continuation_character"
+		},
+		{
+			"name": "meta.bracket.square.access.flowscript",
+			"begin": "([a-zA-Z_][a-zA-Z_0-9]*|(?<=[\\]\\)]))?(\\[)(?!\\])",
+			"beginCaptures": {
+				"1": {
+					"name": "variable.object.flowscript"
+				},
+				"2": {
+					"name": "punctuation.definition.begin.bracket.square.flowscript"
+				}
+			},
+			"end": "\\]",
+			"endCaptures": {
+				"0": {
+					"name": "punctuation.definition.end.bracket.square.flowscript"
+				}
+			},
+			"patterns": [
+				{
+					"include": "#function-call-innards"
+				}
+			]
+		},
+		{
+			"name": "storage.modifier.array.bracket.square.flowscript",
+			"match": "\\[\\s*\\]"
+		},
+		{
+			"match": ";",
+			"name": "punctuation.terminator.statement.flowscript"
+		},
+		{
+			"match": ",",
+			"name": "punctuation.separator.delimiter.flowscript"
+		}
+	],
+	"repository": {
+		"operators": {
+			"patterns": [
+				{
+					"match": "--",
+					"name": "keyword.operator.decrement.flowscript"
+				},
+				{
+					"match": "\\+\\+",
+					"name": "keyword.operator.increment.flowscript"
+				},
+				{
+					"match": "%=|\\+=|-=|\\*=|(?<!\\()/=",
+					"name": "keyword.operator.assignment.compound.flowscript"
+				},
+				{
+					"match": "&=|\\^=|<<=|>>=|\\|=",
+					"name": "keyword.operator.assignment.compound.bitwise.flowscript"
+				},
+				{
+					"match": "<<|>>",
+					"name": "keyword.operator.bitwise.shift.flowscript"
+				},
+				{
+					"match": "!=|<=|>=|==|<|>",
+					"name": "keyword.operator.comparison.flowscript"
+				},
+				{
+					"match": "&&|!|\\|\\|",
+					"name": "keyword.operator.logical.flowscript"
+				},
+				{
+					"match": "&|\\||\\^|~",
+					"name": "keyword.operator.flowscript"
+				},
+				{
+					"match": "=",
+					"name": "keyword.operator.assignment.flowscript"
+				},
+				{
+					"match": "%|\\*|/|-|\\+",
+					"name": "keyword.operator.flowscript"
+				},
+				{
+					"begin": "\\?",
+					"beginCaptures": {
+						"0": {
+							"name": "keyword.operator.ternary.flowscript"
+						}
+					},
+					"end": ":",
+					"endCaptures": {
+						"0": {
+							"name": "keyword.operator.ternary.flowscript"
+						}
+					},
+					"patterns": [
+						{
+							"include": "$self"
+						}
+					]
+				}
+			]
+		},
+		"strings": {
+			"patterns": [
+				{
+					"begin": "\"",
+					"beginCaptures": {
+						"0": {
+							"name": "punctuation.definition.string.begin.flowscript"
+						}
+					},
+					"end": "\"",
+					"endCaptures": {
+						"0": {
+							"name": "punctuation.definition.string.end.flowscript"
+						}
+					},
+					"name": "string.quoted.double.flowscript",
+					"patterns": [
+						{
+							"include": "#string_escaped_char"
+						},
+						{
+							"include": "#string_placeholder"
+						},
+						{
+							"include": "#line_continuation_character"
+						}
+					]
+				},
+				{
+					"begin": "'",
+					"beginCaptures": {
+						"0": {
+							"name": "punctuation.definition.string.begin.flowscript"
+						}
+					},
+					"end": "'",
+					"endCaptures": {
+						"0": {
+							"name": "punctuation.definition.string.end.flowscript"
+						}
+					},
+					"name": "string.quoted.single.flowscript",
+					"patterns": [
+						{
+							"include": "#string_escaped_char"
+						},
+						{
+							"include": "#line_continuation_character"
+						}
+					]
+				}
+			]
+		},
+		"numbers": {
+			"patterns": [
+				{
+					"match": "\\b((0(x|X)[0-9a-fA-F]*)|(0(b|B)[01]*)|(([0-9]+\\.?[0-9]*)|(\\.[0-9]+))((e|E)(\\+|-)?[0-9]+)?)(L|l|UL|ul|u|U|F|f|ll|LL|ull|ULL)?\\b",
+					"name": "constant.numeric.flowscript"
+				}
+			]
+		},
+		"parens": {
+			"begin": "\\(",
+			"beginCaptures": {
+				"0": {
+					"name": "punctuation.section.parens.begin.flowscript"
+				}
+			},
+			"end": "\\)",
+			"endCaptures": {
+				"0": {
+					"name": "punctuation.section.parens.end.flowscript"
+				}
+			},
+			"name": "meta.parens.flowscript",
+			"patterns": [
+				{
+					"include": "$base"
+				}
+			]
+		},
+		"block": {
+			"patterns": [
+				{
+					"begin": "{",
+					"beginCaptures": {
+						"0": {
+							"name": "punctuation.section.block.begin.bracket.curly.flowscript"
+						}
+					},
+					"end": "}|(?=\\s*#\\s*(?:elif|else|endif)\\b)",
+					"endCaptures": {
+						"0": {
+							"name": "punctuation.section.block.end.bracket.curly.flowscript"
+						}
+					},
+					"name": "meta.block.flowscript",
+					"patterns": [
+						{
+							"include": "#block_innards"
+						}
+					]
+				}
+			]
+		},
+		"block_innards": {
+			"patterns": [
+				{
+					"include": "#c_function_call"
+				},
+				{
+					"captures": {
+						"1": {
+							"name": "variable.other.flowscript"
+						},
+						"2": {
+							"name": "punctuation.definition.parameters.flowscript"
+						}
+					},
+					"match": "(?x)\n(?:\n  (?:\n    (?=\\s)(?<!else|new|return)\n    (?<=\\w) \\s+  # or word + space before name\n  )\n)\n(\n  (?:[A-Za-z_][A-Za-z0-9_]*+ | :: )++   # actual name\n  |\n  (?:(?<=operator) (?:[-*&<>=+!]+ | \\(\\) | \\[\\]))\n)\n\\s*(\\() # opening bracket",
+					"name": "meta.initialization.flowscript"
+				},
+				{
+					"include": "#block"
+				},
+				{
+					"include": "$base"
+				}
+			]
+		},
+		"line_continuation_character": {
+			"patterns": [
+				{
+					"match": "(\\\\)\\s*\\n",
+					"captures": {
+						"1": {
+							"name": "constant.character.escape.line-continuation.flowscript"
+						}
+					}
+				}
+			]
+		},
+		"c_function_call": {
+			"captures": {
+				"1": {
+					"name": "punctuation.whitespace.function-call.leading.flowscript"
+				},
+				"2": {
+					"name": "support.function.any-method.flowscript"
+				},
+				"4": {
+					"name": "punctuation.definition.parameters.flowscript"
+				}
+			},
+			"match": "(?x)\n(?:\n  (?=\\s)\n  (?:(?<=else|new|return) | (?<!\\w)) (\\s+)\n)?\n\n# Actual name\n(\n  \\b\n  (?!\n    (while|for|do|if|else|switch|catch|return)\n    \\s* \\(\n  )\n  (?:(?!NS)[A-Za-z_][A-Za-z0-9_]*+\\b | ::)++\n)\n\\s*(\\() # Opening bracket",
+			"name": "meta.function-call.flowscript"
+		},
+		"comments": {
+			"patterns": [
+				{
+					"captures": {
+						"1": {
+							"name": "meta.toc-list.banner.block.flowscript"
+						}
+					},
+					"match": "^/\\* =(\\s*.*?)\\s*= \\*/$\\n?",
+					"name": "comment.block.flowscript"
+				},
+				{
+					"begin": "/\\*",
+					"beginCaptures": {
+						"0": {
+							"name": "punctuation.definition.comment.begin.flowscript"
+						}
+					},
+					"end": "\\*/",
+					"endCaptures": {
+						"0": {
+							"name": "punctuation.definition.comment.end.flowscript"
+						}
+					},
+					"name": "comment.block.flowscript"
+				},
+				{
+					"match": "\\*/.*\\n",
+					"name": "invalid.illegal.stray-comment-end.flowscript"
+				},
+				{
+					"captures": {
+						"1": {
+							"name": "meta.toc-list.banner.line.flowscript"
+						}
+					},
+					"match": "^// =(\\s*.*?)\\s*=\\s*$\\n?",
+					"name": "comment.line.banner.flowscript"
+				},
+				{
+					"begin": "(^[ \\t]+)?(?=//)",
+					"beginCaptures": {
+						"1": {
+							"name": "punctuation.whitespace.comment.leading.flowscript"
+						}
+					},
+					"end": "(?!\\G)",
+					"patterns": [
+						{
+							"begin": "//",
+							"beginCaptures": {
+								"0": {
+									"name": "punctuation.definition.comment.flowscript"
+								}
+							},
+							"end": "\\n",
+							"name": "comment.line.double-slash.flowscript",
+							"patterns": [
+								{
+									"include": "#line_continuation_character"
+								}
+							]
+						}
+					]
+				}
+			]
+		},
+		"string_escaped_char": {
+			"patterns": [
+				{
+					"match": "(?x)\\\\ (\n\\\\             |\n[abefnprtv'\"?]   |\n[0-3]\\d{,2}     |\n[4-7]\\d?        |\nx[a-fA-F0-9]{,2} |\nu[a-fA-F0-9]{,4} |\nU[a-fA-F0-9]{,8} )",
+					"name": "constant.character.escape.flowscript"
+				},
+				{
+					"match": "\\\\.",
+					"name": "invalid.illegal.unknown-escape.flowscript"
+				}
+			]
+		},
+		"string_placeholder": {
+			"patterns": [
+				{
+					"match": "(?x) %\n(\\d+\\$)?                           # field (argument #)\n[#0\\- +']*                          # flags\n[,;:_]?                              # separator character (AltiVec)\n((-?\\d+)|\\*(-?\\d+\\$)?)?          # minimum field width\n(\\.((-?\\d+)|\\*(-?\\d+\\$)?)?)?    # precision\n(hh|h|ll|l|j|t|z|q|L|vh|vl|v|hv|hl)? # length modifier\n[diouxXDOUeEfFgGaACcSspn%]           # conversion type",
+					"name": "constant.other.placeholder.flowscript"
+				},
+				{
+					"match": "%",
+					"name": "invalid.illegal.placeholder.flowscript"
+				}
+			]
+		},
+		"case_statement": {
+			"name": "meta.conditional.case.flowscript",
+			"begin": "((?>(?:(?:(?>(?<!\\s)\\s+)|(\\/\\*)((?>(?:[^\\*]|(?>\\*+)[^\\/])*)((?>\\*+)\\/)))+|(?:(?:(?:(?:\\b|(?<=\\W))|(?=\\W))|\\A)|\\Z))))((?<!\\w)case(?!\\w))",
+			"beginCaptures": {
+				"1": {
+					"patterns": [
+						{
+							"include": "#inline_comment"
+						}
+					]
+				},
+				"2": {
+					"name": "comment.block.flowscript punctuation.definition.comment.begin.flowscript"
+				},
+				"3": {
+					"name": "comment.block.flowscript"
+				},
+				"4": {
+					"patterns": [
+						{
+							"match": "\\*\\/",
+							"name": "comment.block.flowscript punctuation.definition.comment.end.flowscript"
+						},
+						{
+							"match": "\\*",
+							"name": "comment.block.flowscript"
+						}
+					]
+				},
+				"5": {
+					"name": "keyword.control.case.flowscript"
+				}
+			},
+			"end": "(:)",
+			"endCaptures": {
+				"1": {
+					"name": "punctuation.separator.colon.case.flowscript"
+				}
+			},
+			"patterns": [
+				{
+					"include": "#evaluation_context"
+				},
+				{
+					"include": "#c_conditional_context"
+				}
+			]
+		},
+		"default_statement": {
+			"name": "meta.conditional.case.flowscript",
+			"begin": "((?>(?:(?:(?>(?<!\\s)\\s+)|(\\/\\*)((?>(?:[^\\*]|(?>\\*+)[^\\/])*)((?>\\*+)\\/)))+|(?:(?:(?:(?:\\b|(?<=\\W))|(?=\\W))|\\A)|\\Z))))((?<!\\w)default(?!\\w))",
+			"beginCaptures": {
+				"1": {
+					"patterns": [
+						{
+							"include": "#inline_comment"
+						}
+					]
+				},
+				"2": {
+					"name": "comment.block.flowscript punctuation.definition.comment.begin.flowscript"
+				},
+				"3": {
+					"name": "comment.block.flowscript"
+				},
+				"4": {
+					"patterns": [
+						{
+							"match": "\\*\\/",
+							"name": "comment.block.flowscript punctuation.definition.comment.end.flowscript"
+						},
+						{
+							"match": "\\*",
+							"name": "comment.block.flowscript"
+						}
+					]
+				},
+				"5": {
+					"name": "keyword.control.default.flowscript"
+				}
+			},
+			"end": "(:)",
+			"endCaptures": {
+				"1": {
+					"name": "punctuation.separator.colon.case.default.flowscript"
+				}
+			},
+			"patterns": [
+				{
+					"include": "#evaluation_context"
+				},
+				{
+					"include": "#c_conditional_context"
+				}
+			]
+		},
+		"switch_conditional_parentheses": {
+			"name": "meta.conditional.switch.flowscript",
+			"begin": "((?>(?:(?:(?>(?<!\\s)\\s+)|(\\/\\*)((?>(?:[^\\*]|(?>\\*+)[^\\/])*)((?>\\*+)\\/)))+|(?:(?:(?:(?:\\b|(?<=\\W))|(?=\\W))|\\A)|\\Z))))(\\()",
+			"beginCaptures": {
+				"1": {
+					"patterns": [
+						{
+							"include": "#inline_comment"
+						}
+					]
+				},
+				"2": {
+					"name": "comment.block.flowscript punctuation.definition.comment.begin.flowscript"
+				},
+				"3": {
+					"name": "comment.block.flowscript"
+				},
+				"4": {
+					"patterns": [
+						{
+							"match": "\\*\\/",
+							"name": "comment.block.flowscript punctuation.definition.comment.end.flowscript"
+						},
+						{
+							"match": "\\*",
+							"name": "comment.block.flowscript"
+						}
+					]
+				},
+				"5": {
+					"name": "punctuation.section.parens.begin.bracket.round.conditional.switch.flowscript"
+				}
+			},
+			"end": "(\\))",
+			"endCaptures": {
+				"1": {
+					"name": "punctuation.section.parens.end.bracket.round.conditional.switch.flowscript"
+				}
+			},
+			"patterns": [
+				{
+					"include": "#evaluation_context"
+				},
+				{
+					"include": "#c_conditional_context"
+				}
+			]
+		},
+		"switch_statement": {
+			"name": "meta.block.switch.flowscript",
+			"begin": "(((?>(?:(?:(?>(?<!\\s)\\s+)|(\\/\\*)((?>(?:[^\\*]|(?>\\*+)[^\\/])*)((?>\\*+)\\/)))+|(?:(?:(?:(?:\\b|(?<=\\W))|(?=\\W))|\\A)|\\Z))))((?<!\\w)switch(?!\\w)))",
+			"beginCaptures": {
+				"1": {
+					"name": "meta.head.switch.flowscript"
+				},
+				"2": {
+					"patterns": [
+						{
+							"include": "#inline_comment"
+						}
+					]
+				},
+				"3": {
+					"name": "comment.block.flowscript punctuation.definition.comment.begin.flowscript"
+				},
+				"4": {
+					"name": "comment.block.flowscript"
+				},
+				"5": {
+					"patterns": [
+						{
+							"match": "\\*\\/",
+							"name": "comment.block.flowscript punctuation.definition.comment.end.flowscript"
+						},
+						{
+							"match": "\\*",
+							"name": "comment.block.flowscript"
+						}
+					]
+				},
+				"6": {
+					"name": "keyword.control.switch.flowscript"
+				}
+			},
+			"end": "(?:(?<=\\}|%>|\\?\\?>)|(?=[;>\\[\\]=]))",
+			"patterns": [
+				{
+					"name": "meta.head.switch.flowscript",
+					"begin": "\\G ?",
+					"end": "((?:\\{|<%|\\?\\?<|(?=;)))",
+					"endCaptures": {
+						"1": {
+							"name": "punctuation.section.block.begin.bracket.curly.switch.flowscript"
+						}
+					},
+					"patterns": [
+						{
+							"include": "#switch_conditional_parentheses"
+						},
+						{
+							"include": "$self"
+						}
+					]
+				},
+				{
+					"name": "meta.body.switch.flowscript",
+					"begin": "(?<=\\{|<%|\\?\\?<)",
+					"end": "(\\}|%>|\\?\\?>)",
+					"endCaptures": {
+						"1": {
+							"name": "punctuation.section.block.end.bracket.curly.switch.flowscript"
+						}
+					},
+					"patterns": [
+						{
+							"include": "#default_statement"
+						},
+						{
+							"include": "#case_statement"
+						},
+						{
+							"include": "$self"
+						},
+						{
+							"include": "#block_innards"
+						}
+					]
+				},
+				{
+					"name": "meta.tail.switch.flowscript",
+					"begin": "(?<=\\}|%>|\\?\\?>)[\\s\\n]*",
+					"end": "[\\s\\n]*(?=;)",
+					"patterns": [
+						{
+							"include": "$self"
+						}
+					]
+				}
+			]
+		}
+	},
+	"version": "1.0"
+}

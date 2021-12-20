@@ -1,0 +1,117 @@
+{
+	"name": "atlus-script-helper",
+	"description": "Adds support for the flowscript language used by Atlus games.",
+	"author": "AnimatedSwine37",
+	"license": "MIT",
+	"version": "1.0.0",
+	"repository": {
+		"type": "git",
+		"url": "https://github.com/Microsoft/vscode-extension-samples"
+	},
+	"publisher": "AnimatedSwine37",
+	"categories": [],
+	"keywords": [
+		"multi-root ready"
+	],
+	"engines": {
+		"vscode": "^1.43.0"
+	},
+	"activationEvents": [
+		"onLanguage:Flowscript",
+		"onCommand:flowscript.compile",
+		"onCommand:flowscript.decompile",
+		"onCommand:flowscript.selectGame"
+	],
+	"main": "./client/out/extension",
+	"contributes": {
+		"configuration": {
+			"type": "object",
+			"title": "Atlus Script Helper",
+			"properties": {
+				"atlusScriptHelper.scriptToolsPath": {
+					"scope": "application",
+					"type": "string",
+					"default": "",
+					"markdownDescription": "The file path to your installation of [Atlus Script Tools](https://amicitia.github.io/post/atlusscriptcompiler)",
+					"format": "uri"
+				},
+				"atlusScriptHelper.defaultGame": {
+					"scope": "resource",
+					"type":"string",
+					"enum": ["SMT3 Nocturne", "SMT Digital Devil Saga", "Persona 3 Portable", "Persona 3", "Persona 3 FES", "Persona 4",
+							"Persona 4 Golden", "Persona 5", "Persona 5 Royal", "Persona Q2"],
+					"description": "The game that all newly opened flowscript files will default to."
+
+				}
+			}
+		},
+		"languages": [{
+			"id": "Flowscript",
+			"extensions": [
+				".flow"
+			]
+		}],
+		"grammars": [
+			{
+				"language": "Flowscript",
+				"scopeName": "source.flowscript",
+				"path": "./syntaxes/flowscript.json"
+			}
+		],
+		"commands": [
+		{
+		  "command": "flowscript.compile",
+		  "title": "Compile Flowscript"
+		},
+		{
+			"command": "flowscript.decompile",
+			"title": "Decompile Flowscript"
+		},
+		{
+			"command": "flowscript.selectGame",
+			"title": "Select Game"
+		}
+	  ],
+	   "menus": {
+		"explorer/context": [
+		  {
+			"when": "resourceExtname == .flow",
+			"command": "flowscript.compile",
+			"group": "7_modification"
+		  },
+		  {
+			  "when": "resourceExtname == .bf",
+			  "command": "flowscript.decompile",
+			  "group": "7_modification"
+		  }
+		],
+		"editor/context": [
+		  {
+			"when": "resourceExtname == .flow",
+			"command": "flowscript.compile",
+			"group": "7_modification"
+		  },
+		  {
+			  "when": "resourceExtname == .bf",
+			  "command": "flowscript.decompile",
+			  "group": "7_modification"
+		  }
+		]
+	}
+	},
+	"scripts": {
+		"vscode:prepublish": "npm run compile",
+		"compile": "tsc -b",
+		"watch": "tsc -b -w",
+		"postinstall": "cd client && npm install && cd ../server && npm install && cd ..",
+		"test": "sh ./scripts/e2e.sh"
+	},
+	"devDependencies": {
+		"@types/mocha": "^8.0.3",
+		"@types/node": "^12.12.0",
+		"@typescript-eslint/parser": "^2.3.0",
+		"eslint": "^6.4.0",
+		"mocha": "^8.1.1",
+		"typescript": "^4.2.2"
+	}
+}
