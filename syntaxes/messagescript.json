@@ -1,0 +1,32 @@
+{
+	"scopeName": "source.messagescript",
+	"fileTypes": [
+		"Messagescript"
+	],
+	"name": "Messagescript",
+	"patterns": [
+		{
+			"match": "\\[(msg)\\s+(.+)\\]",
+			"captures": {
+				"1": {
+					"name": "keyword.control.msg.messagescript"
+				},
+				"2": {
+					"name": "entity.name.section.messagescript"
+				}
+			}
+		},
+		{
+			"match": "\\[n\\]",
+			"name": "constant.other.newline.messagesript"
+		},
+		{
+			"match": "\\[e\\]",
+			"name": "constant.other.end.messagesript"
+		},
+		{
+			"match": "(\\[.+?\\])",
+			"name": "markup.other.generic.messagescript"
+		}
+	]
+}
