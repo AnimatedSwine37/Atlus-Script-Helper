@@ -21,7 +21,7 @@ import {
 } from 'vscode-languageserver-textdocument';
 import { validateImport } from './validation'
 import { cursorInFunction, getPositionText, getWord } from './utils';
-import { getImportCompletionItems, loadFunctions, loadLibrary, loadMessages } from './imports';
+import { getImportCompletionItems, loadFunctions, loadLibrary, loadMessageFunctions, loadMessages } from './imports';
 import * as path from 'path';
 import { existsSync } from 'fs';
 import { fileURLToPath } from 'url';
@@ -99,6 +99,7 @@ const defaultSettings: Settings = { scriptToolsPath: "" };
 let globalSettings: Settings = defaultSettings;
 
 let libraryCompletionItems: CompletionItem[] | null = null;
+let messageLibraryCompletionItems: CompletionItem[] | null = null;
 
 let functionCompletionItems: Map<string, CompletionItem[]> = new Map();
 let messageCompletionItems: Map<string, CompletionItem[]>  = new Map();
@@ -165,7 +166,11 @@ async function validateTextDocument(textDocument: TextDocument): Promise<void> {
 		libraryCompletionItems = loadLibrary(settings.scriptToolsPath);
 		if(libraryCompletionItems == null) {
 			connection.sendNotification("flowscript/error", "The entered Atlus script tools do not exist. Please change the path in settings.");
-		}
+		} 
+	}
+
+	if(messageLibraryCompletionItems == null) {
+		messageLibraryCompletionItems = loadMessageFunctions(settings.scriptToolsPath);
 	}
 
 	// The validator creates diagnostics for all uppercase words length 2 and more
@@ -212,6 +217,7 @@ async function validateTextDocument(textDocument: TextDocument): Promise<void> {
 		}
 	}
 	// Update the imports for the document
+	// TODO import stuff from other flows that are imported
 	let currentImports = documentImports.get(textDocument.uri);
 	if (currentImports != undefined) {
 		currentImports = imports;
@@ -299,39 +305,57 @@ connection.onCompletion(
 		let completionItems: CompletionItem[] = [];
 		const document = documents.get(params.textDocument.uri);
 		if (document != undefined) {
-			let { text, index } = getPositionText(document, params.position);
-			let currentImports = documentImports.get(params.textDocument.uri);
-			if (currentImports != undefined && messageCompletionItems != null && (cursorInFunction(text, index, "MSG") || cursorInFunction(text, index, "HELP_MSG"))) {
-				currentImports.forEach(x => {
-					let gotItems = messageCompletionItems.get(path.dirname(params.textDocument.uri) + "/" + x);
-					if (gotItems != undefined)
-						completionItems = completionItems.concat(gotItems.filter(x => x.data.endsWith("msg")))
-				});
-			}
-			else if (currentImports != undefined && messageCompletionItems != null && (cursorInFunction(text, index, "SEL") || cursorInFunction(text, index, "ADV_SEL"))) {
-				currentImports.forEach(x => {
-					let gotItems = messageCompletionItems.get(path.dirname(params.textDocument.uri) + "/" + x);
-					if (gotItems != undefined)
-						completionItems = completionItems.concat(gotItems.filter(x => x.data.endsWith("sel")))
-				});
-			}
-			else {
-				// Library functions
-				if (libraryCompletionItems != null)
-					completionItems = completionItems.concat(libraryCompletionItems);
-				// Imported functions
-				if (currentImports != undefined && functionCompletionItems != null) {
-					currentImports.forEach(x => {
-						let gotItems = functionCompletionItems.get(path.dirname(params.textDocument.uri) + "/" + x);
-						if (gotItems != undefined)
-							completionItems = completionItems.concat(gotItems)
-					});
-				}
+			if(document.languageId == "Flowscript") {
+				completionItems = getFlowCompletionItems(document, params);
+			} else if(document.languageId == "Messagescript") {
+				completionItems = getMessageScriptCompletionItems(document, params);
 			}
 		}
 		return completionItems;
 	}
 );
+
+function getFlowCompletionItems(document: TextDocument, params: TextDocumentPositionParams): CompletionItem[] {
+	let completionItems: CompletionItem[] = [];
+	let { text, index } = getPositionText(document, params.position);
+	let currentImports = documentImports.get(params.textDocument.uri);
+	if (currentImports != undefined && messageCompletionItems != null && (cursorInFunction(text, index, "MSG") || cursorInFunction(text, index, "HELP_MSG"))) {
+		currentImports.forEach(x => {
+			let gotItems = messageCompletionItems.get(path.dirname(params.textDocument.uri) + "/" + x);
+			if (gotItems != undefined)
+				completionItems = completionItems.concat(gotItems.filter(x => x.data.endsWith("msg")))
+		});
+	}
+	else if (currentImports != undefined && messageCompletionItems != null && (cursorInFunction(text, index, "SEL") || cursorInFunction(text, index, "ADV_SEL"))) {
+		currentImports.forEach(x => {
+			let gotItems = messageCompletionItems.get(path.dirname(params.textDocument.uri) + "/" + x);
+			if (gotItems != undefined)
+				completionItems = completionItems.concat(gotItems.filter(x => x.data.endsWith("sel")))
+		});
+	}
+	else {
+		// Library functions
+		if (libraryCompletionItems != null)
+			completionItems = completionItems.concat(libraryCompletionItems);
+		// Imported functions
+		if (currentImports != undefined && functionCompletionItems != null) {
+			currentImports.forEach(x => {
+				let gotItems = functionCompletionItems.get(path.dirname(params.textDocument.uri) + "/" + x);
+				if (gotItems != undefined)
+					completionItems = completionItems.concat(gotItems)
+			});
+		}
+	}
+	return completionItems;
+}
+
+function getMessageScriptCompletionItems(document: TextDocument, params: TextDocumentPositionParams): CompletionItem[] {
+	let completionItems: CompletionItem[] = [];
+	if(messageLibraryCompletionItems != null) {
+		completionItems = messageLibraryCompletionItems;
+	}
+	return completionItems;
+}
 
 // This handler resolves additional information for the item selected in
 // the completion list.

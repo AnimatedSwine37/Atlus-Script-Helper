@@ -54,8 +54,8 @@ export function activate(context: ExtensionContext) {
 
 	// Options to control the language client
 	let clientOptions: LanguageClientOptions = {
-		// Register the server for plain text documents
-		documentSelector: [{ scheme: 'file', language: 'Flowscript' }],
+		// Register the server for flow and msg files
+		documentSelector: [{ scheme: 'file', language: 'Flowscript' }, { scheme: 'file', language: 'Messagescript'}],
 		synchronize: {
 			// Notify the server about file changes to '.clientrc files contained in the workspace
 			fileEvents: workspace.createFileSystemWatcher('**/.clientrc')

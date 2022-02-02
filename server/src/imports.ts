@@ -10,7 +10,6 @@ import { getMessages, MessageLibraryFunction, Parameter } from './messagescript'
 export function loadLibrary(scriptToolsPath: string): CompletionItem[] | null {
 	let modulesPath: URL = pathToFileURL(scriptToolsPath + "\\Libraries\\Persona4Golden\\Modules\\");
 	let completionItems: CompletionItem[] = loadFlowFunctions(modulesPath);
-	completionItems = completionItems.concat(loadMessageFunctions(pathToFileURL(scriptToolsPath + "\\Libraries\\Persona4Golden\\MessageScriptLibrary.json")));
 
 	completionItems.push(
 		{
@@ -64,7 +63,8 @@ function loadFlowFunctions(modulesPath: URL): CompletionItem[] {
 	return completionItems;
 }
 
-function loadMessageFunctions(messageFunctionsPath: URL): CompletionItem[] {
+export function loadMessageFunctions(scriptToolsPath: string): CompletionItem[] {
+	let messageFunctionsPath: URL = pathToFileURL(scriptToolsPath + "\\Libraries\\Persona4Golden\\MessageScriptLibrary.json");
 	let completionItems: CompletionItem[] = [];
 	if(!existsSync(messageFunctionsPath)) {
 		return completionItems;
@@ -81,8 +81,6 @@ function loadMessageFunctions(messageFunctionsPath: URL): CompletionItem[] {
 			let documentationArr: string[] | undefined = msgFunction.Parameters?.map((parameter: Parameter, index: number) =>
 				parameter.Description != "" ? `\n${parameter.Name != "" ? parameter.Name : `param${index}`} - ${parameter.Description}` : "");
 			let documentation: string = documentationArr != undefined ? documentationArr.toString().replace(/\,/g, "") : "";
-			if(msgFunction.Name == "anim")
-				console.log(`documentation = ${documentation}`)
 			if (msgFunction.Description != "") {
 				documentation = documentation != "" ? msgFunction.Description + "\n" + documentation : msgFunction.Description;
 			}
