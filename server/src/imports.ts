@@ -1,21 +1,37 @@
 import { existsSync, readdirSync, readFileSync } from 'fs';
 import { fileURLToPath, pathToFileURL, URL } from 'url';
-import { CompletionItem, CompletionItemKind, ConnectionError } from 'vscode-languageserver/node';
+import { CompletionItem, CompletionItemKind } from 'vscode-languageserver/node';
 import { getFileText } from './utils';
 import * as path from 'path';
 import { getFunctions } from './flowscript';
-import { getMessages } from './messagescript';
+import { getMessages, MessageLibraryFunction, Parameter } from './messagescript';
 
 // Load all of the functions from the library jsons
 export function loadLibrary(scriptToolsPath: string): CompletionItem[] | null {
+	let modulesPath: URL = pathToFileURL(scriptToolsPath + "\\Libraries\\Persona4Golden\\Modules\\");
+	let completionItems: CompletionItem[] = loadFlowFunctions(modulesPath);
+	completionItems = completionItems.concat(loadMessageFunctions(pathToFileURL(scriptToolsPath + "\\Libraries\\Persona4Golden\\MessageScriptLibrary.json")));
+
+	completionItems.push(
+		{
+			label: 'import',
+			kind: CompletionItemKind.Function,
+			data: 1,
+			documentation: "Import statement for a .bf or .msg file relative to the current file.",
+			detail: "import(string filePath)",
+		}
+	)
+	return completionItems;
+}
+
+function loadFlowFunctions(modulesPath: URL): CompletionItem[] {
 	// Get all functions
 	let modules: String[] = [];
 	let functions: any[] = [];
-	let modulesPath: URL = pathToFileURL(scriptToolsPath + "\\Libraries\\Persona4Golden\\Modules\\");
 	if (existsSync(modulesPath)) {
 		modules = readdirSync(modulesPath);
 	} else {
-		return null;
+		return [];
 	}
 	modules.forEach(module => {
 		let jsonPath = pathToFileURL(modulesPath.pathname.substring(1) + module + "/Functions.json");
@@ -27,7 +43,7 @@ export function loadLibrary(scriptToolsPath: string): CompletionItem[] | null {
 		}
 	});
 	// Convert the functions into the list used in completion items
-	let completionItems: any[] = [];
+	let completionItems: CompletionItem[] = [];
 	functions.forEach(item => {
 		let documentation: string = item.Parameters.map((parameter: any) =>
 			parameter.Description != "" ? "\n" + parameter.Name + " - " + parameter.Description : "");
@@ -45,15 +61,44 @@ export function loadLibrary(scriptToolsPath: string): CompletionItem[] | null {
 			detail: detail,
 		})
 	});
-	completionItems.push(
-		{
-			label: 'import',
-			kind: CompletionItemKind.Function,
-			data: 1,
-			documentation: "Import statement for a .bf or .msg file relative to the current file.",
-			detail: "import(string filePath)",
-		}
-	)
+	return completionItems;
+}
+
+function loadMessageFunctions(messageFunctionsPath: URL): CompletionItem[] {
+	let completionItems: CompletionItem[] = [];
+	if(!existsSync(messageFunctionsPath)) {
+		return completionItems;
+	}
+	
+	let messageFunctions = JSON.parse(readFileSync(messageFunctionsPath).toString());
+	messageFunctions.forEach((major: MessageLibraryFunction) => {
+		major.Functions?.forEach(((msgFunction: MessageLibraryFunction) => {
+			// Skip unused functions
+			if(msgFunction.Semantic == "Unused")
+				return;
+			// Convert message function json into strings for completion item
+			let name: string = msgFunction.Name != "" ? msgFunction.Name : `f ${major.Index} ${msgFunction.Index}`;
+			let documentationArr: string[] | undefined = msgFunction.Parameters?.map((parameter: Parameter, index: number) =>
+				parameter.Description != "" ? `\n${parameter.Name != "" ? parameter.Name : `param${index}`} - ${parameter.Description}` : "");
+			let documentation: string = documentationArr != undefined ? documentationArr.toString().replace(/\,/g, "") : "";
+			if(msgFunction.Name == "anim")
+				console.log(`documentation = ${documentation}`)
+			if (msgFunction.Description != "") {
+				documentation = documentation != "" ? msgFunction.Description + "\n" + documentation : msgFunction.Description;
+			}
+			let detail: string = `[${name}${msgFunction.Parameters?.map((parameter: Parameter, index: number) => (" " + (parameter.Name != "" ? parameter.Name : `param${index}`)))}]`;
+			detail = detail.replace(",", ", ");
+			// Add message function completion item to list
+			completionItems.push({
+				label: `[${name}]`,
+				kind: CompletionItemKind.Function,
+				data: name,
+				documentation: documentation,
+				detail: detail,
+			})
+
+		}));
+	})
 	return completionItems;
 }
 
@@ -84,7 +129,7 @@ export function loadMessages(text: string, fileName: string): CompletionItem[] {
 	// TODO have filename be hyperlinked to the file
 }
 
-export function getImportCompletionItems(completionItems: Map<string, CompletionItem[]>, documentUri: string, documentImports: Map<string, string[]>, loadFunction:Function, fileExtension:string): Map<string, CompletionItem[]> {
+export function getImportCompletionItems(completionItems: Map<string, CompletionItem[]>, documentUri: string, documentImports: Map<string, string[]>, loadFunction: Function, fileExtension: string): Map<string, CompletionItem[]> {
 	let currentImports = documentImports.get(documentUri);
 	if (currentImports != undefined && currentImports.length > 0) {
 		let loadedImports = currentImports.filter(x => path.extname(x) == fileExtension);
@@ -93,10 +138,10 @@ export function getImportCompletionItems(completionItems: Map<string, Completion
 				let filePath = fileURLToPath(path.dirname(documentUri) + "/" + x);
 				loadFunction(getFileText(filePath), path.basename(path.basename(filePath))).forEach((item: CompletionItem) => {
 					let documentCompletionItems = completionItems.get(path.dirname(documentUri) + "/" + x);
-					if(documentCompletionItems == undefined) {
-						completionItems.set(path.dirname(documentUri) + "/" + x,  [item]);
-					} 
-					else if(documentCompletionItems.filter(x => x.data == item.data).length <= 0) {
+					if (documentCompletionItems == undefined) {
+						completionItems.set(path.dirname(documentUri) + "/" + x, [item]);
+					}
+					else if (documentCompletionItems.filter(x => x.data == item.data).length <= 0) {
 						documentCompletionItems.push(item);
 					}
 				});

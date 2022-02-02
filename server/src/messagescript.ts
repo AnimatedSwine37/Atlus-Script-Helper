@@ -10,6 +10,34 @@ class Message {
 	}
 }
 
+export class MessageLibraryFunction{
+	Index: number;
+	Name: string;
+	Description: string;
+	Semantic: string | null;
+	Functions: MessageLibraryFunction[] | null;
+	Parameters: Parameter[] | null;
+
+	constructor(Index: number, Name: string, Description: string, Semantic: string | null, Functions: MessageLibraryFunction[] | null, Parameters: Parameter[] | null) {
+		this.Index = Index;
+		this.Name = Name;
+		this.Description = Description;
+		this.Semantic = Semantic;
+		this.Functions = Functions;
+		this.Parameters = Parameters;
+	}
+}
+
+export class Parameter {
+	Name: string;
+	Description: string;
+
+	constructor(Name:string, Description: string) {
+		this.Name = Name;
+		this.Description = Description;
+	}
+}
+
 export function getMessages(text: string): Message[]  {
 	if(text == undefined) {
 		return [];
