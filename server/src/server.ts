@@ -90,12 +90,13 @@ connection.onInitialized(() => {
 
 interface Settings {
 	scriptToolsPath: string;
+	defaultGame: string;
 }
 
 // The global settings, used when the `workspace/configuration` request is not supported by the client.
 // Please note that this is not the case when using this server with the client provided in this example
 // but could happen with other clients.
-const defaultSettings: Settings = { scriptToolsPath: "" };
+const defaultSettings: Settings = { scriptToolsPath: "", defaultGame: "Persona 4 Golden" };
 let globalSettings: Settings = defaultSettings;
 
 let libraryCompletionItems: CompletionItem[] | null = null;
@@ -163,14 +164,14 @@ async function validateTextDocument(textDocument: TextDocument): Promise<void> {
 	let settings = await getDocumentSettings(textDocument.uri);
 
 	if (libraryCompletionItems == null) {
-		libraryCompletionItems = loadLibrary(settings.scriptToolsPath);
+		libraryCompletionItems = loadLibrary(settings.scriptToolsPath, settings.defaultGame);
 		if(libraryCompletionItems == null) {
 			connection.sendNotification("flowscript/error", "The entered Atlus script tools do not exist. Please change the path in settings.");
 		} 
 	}
 
 	if(messageLibraryCompletionItems == null) {
-		messageLibraryCompletionItems = loadMessageFunctions(settings.scriptToolsPath);
+		messageLibraryCompletionItems = loadMessageFunctions(settings.scriptToolsPath, settings.defaultGame);
 	}
 
 	// The validator creates diagnostics for all uppercase words length 2 and more

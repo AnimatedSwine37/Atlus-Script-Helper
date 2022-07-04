@@ -7,8 +7,9 @@ import { getFunctions } from './flowscript';
 import { getMessages, MessageLibraryFunction, Parameter } from './messagescript';
 
 // Load all of the functions from the library jsons
-export function loadLibrary(scriptToolsPath: string): CompletionItem[] | null {
-	let modulesPath: URL = pathToFileURL(scriptToolsPath + "\\Libraries\\Persona4Golden\\Modules\\");
+export function loadLibrary(scriptToolsPath: string, game: string): CompletionItem[] | null {
+	game = game.replace(/ /g, "");
+	let modulesPath: URL = pathToFileURL(scriptToolsPath + "\\Libraries\\" + game +"\\Modules\\");
 	let completionItems: CompletionItem[] = loadFlowFunctions(modulesPath);
 
 	completionItems.push(
@@ -63,8 +64,9 @@ function loadFlowFunctions(modulesPath: URL): CompletionItem[] {
 	return completionItems;
 }
 
-export function loadMessageFunctions(scriptToolsPath: string): CompletionItem[] {
-	let messageFunctionsPath: URL = pathToFileURL(scriptToolsPath + "\\Libraries\\Persona4Golden\\MessageScriptLibrary.json");
+export function loadMessageFunctions(scriptToolsPath: string, game: string): CompletionItem[] {
+	game = game.replace(/ /g, "");
+	let messageFunctionsPath: URL = pathToFileURL(scriptToolsPath + "\\Libraries\\" + game + "\\MessageScriptLibrary.json");
 	let completionItems: CompletionItem[] = [];
 	if(!existsSync(messageFunctionsPath)) {
 		return completionItems;
